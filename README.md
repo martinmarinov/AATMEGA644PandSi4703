@@ -4,7 +4,7 @@ Portable FM Radio
 Finished project
 ------------
 
-![alt text](https://github.com/martinmarinov/AATMEGA644PandSi4703/finished_device.png "Finished project")
+![Click to see the finished project](https://raw.github.com/martinmarinov/AATMEGA644PandSi4703/master/finished_device.jpg "Finished project")
 
 
 Hardware
