@@ -25,15 +25,6 @@
 #define LCD_X     84
 #define LCD_Y     48
 
-/* put comments in here for future reference, showing what the device is intended to do, which
-device is to be used, and the fuse settings (and why) */
-
-
-/* This is a template created by cutting bits from a stepper motor drive
-   Some port direction commands are included as examples */
-
-
-
 /* Intended for ATmega644P */
 /* Clock rate is 8.0 MHz  (8MHz internal oscillator (default), divide by 8 (default), to give CLKIO of 1MHz */
 
@@ -52,13 +43,10 @@ device is to be used, and the fuse settings (and why) */
 
 
 /* Interrupt vectors */
-// If we were using interrupts the interrupt vectors would be here
-// there is a useful list at    http://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html
 
 
 /* Port direction setting */
 	
-// TODO! move that in LCD
 inline void port_direction_init() {
 
 /* DDR is Data Direction Register
@@ -86,6 +74,7 @@ inline void port_direction_init() {
 
 char rdsname[9] = "HELLO :)";
 char rdsrt[65] = "Welcome to radio";
+char strbuff[9];
 
 #define MAXSCALEFREQ (1097)
 #define MINSCALEFREQ (864)
@@ -103,12 +92,9 @@ void drawScreen(void) {
 	
 	const uint8_t xpointerpx = (bmp_scale.width * (freq - MINSCALEFREQ)) / (MAXSCALEFREQ - MINSCALEFREQ);
 
-	bitmap_t * scale_font = &font_normal;
-	bitmap_t * scale_font_dec = &font_normal_dec;
-	
-	const uint8_t freqsize = lcd_freqfont_measure(scale_font, scale_font_dec, freq, 10, 2, 1);
+	const uint8_t freqsize = str_putrawfreq(strbuff, freq, 0)*5+1;
 	const uint8_t startx = (xpointerpx < 2 + (freqsize >> 1)) ? 0 : ( (xpointerpx + (freqsize >> 1) + 2 > LCD_X) ? (LCD_X - freqsize - 4) : (xpointerpx - (freqsize >> 1) - 2) );	
-	const uint8_t sizeoftext = scale_font->height * 8;
+	const uint8_t sizeoftext = 8;
 	const uint8_t pos_of_vfo = LCD_Y-16+sizeoftext;
 	const uint8_t size_of_vfo = 16-sizeoftext;
 
@@ -120,7 +106,8 @@ void drawScreen(void) {
 	lcd_clearrect(xpointerpx, pos_of_vfo, 1, size_of_vfo);	
 	lcd_fillrect(xpointerpx + 1, pos_of_vfo, 3, size_of_vfo);	
 	lcd_clearrect(xpointerpx + 4, pos_of_vfo, 1, size_of_vfo);
-	lcd_freqfont(scale_font, scale_font_dec, freq, startx+2, 4, 1);
+	
+	lcd_stringwhite(strbuff, startx+2, 4);
 
 	lcd_stringlarge(rdsname, 0, 1);
 

@@ -174,6 +174,16 @@ void lcd_char(uint8_t character, uint8_t x, uint8_t y) {
 		lcd_buffer[y*LCD_X+index] |= ASCII[character - 0x20][index-x];
 }
 
+void lcd_charwhite(uint8_t character, uint8_t x, uint8_t y) {
+
+	uint8_t index;
+	const uint8_t pmax = x+5;
+	const uint8_t max = (pmax > LCD_X) ? (LCD_X) : (pmax);
+
+	for (index = x ; index < max ; index++)
+		lcd_buffer[y*LCD_X+index] &= ~ASCII[character - 0x20][index-x];
+}
+
 // write a char at pixel x and row y
 void lcd_charlarge(uint8_t character, uint8_t x, uint8_t y) {
 
@@ -223,6 +233,14 @@ void lcd_string(uint8_t *characters, uint8_t x, uint8_t y) {
 	}
 }
 
+void lcd_stringwhite(uint8_t *characters, uint8_t x, uint8_t y) {
+	uint8_t pos = 0;
+	while (*characters && pos < LCD_X) {
+		lcd_charwhite(*characters++, x+pos, y);
+		pos+=5;	
+	}
+}
+
 void lcd_stringlarge(uint8_t *characters, uint8_t x, uint8_t y) {
 	uint8_t pos = 0;
 	while (*characters) {
@@ -247,44 +265,6 @@ void lcd_uint8(uint8_t val, uint8_t x, uint8_t y) {
 		pos+=5;	
 	}
 }
-
-
-
-uint8_t lcd_uint8font(bitmap_t * font, uint8_t val, uint8_t x, uint8_t y, uint8_t padding) {
-	unsigned char buf[3];
-	const uint8_t width = font->width+padding;
-	uint8_t pos = 0;
-	int8_t ptr;
-	for(ptr=0;ptr<3;++ptr) {
-		buf[ptr] = (val % 10);
-		val /= 10;
-	}
-	for(ptr=2;ptr>0;--ptr) {
-		if (buf[ptr] != 0) break;
-	}
-	for(;ptr>=0;--ptr) {
-		lcd_bitmap(font, buf[ptr], x+pos, y);
-		pos+=width;	
-	}
-	return pos;
-}
-
-void lcd_freqfont(bitmap_t * font, bitmap_t * decimalsymbol, uint16_t freq, uint8_t x, uint8_t y, uint8_t padding) {
-	uint8_t fract = freq % 10;
-	uint8_t whole = freq / 10;
-	
-	uint8_t pos = lcd_uint8font(font, whole, x, y, padding);
-	lcd_bitmap(decimalsymbol, 0, x+pos, y);
-	pos += decimalsymbol->width+padding;
-	lcd_uint8font(font, fract, x+pos, y, padding);
-}
-
-
-uint8_t lcd_freqfont_measure(bitmap_t * font, bitmap_t * decimalsymbol, uint16_t freq, uint8_t x, uint8_t y, uint8_t padding) {
-	const uint8_t chars = (freq < 1000) ? 3 : 4;
-	return (decimalsymbol->width)+padding + ((font->width) + padding)*chars;
-}
-
 
 void lcd_uint16(uint16_t val, uint8_t x, uint8_t y) {
 	unsigned char buf[5];

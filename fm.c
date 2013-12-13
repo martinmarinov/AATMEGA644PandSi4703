@@ -60,10 +60,15 @@ uint8_t isc_buffer[32]; // the size of registers time 2 (since registers are 2 b
 #define RDSS 11
 #define STEREO 8
 
+// RDS specific stuff
+#define RDS_PS (0)
+#define RDS_RT (2)
+
+// allowed chars in RDS
 #define FIRST_ALLOWED_CHAR (0x20)
 #define LAST_ALLOWED_CHAR (0x7f)
-#define TOTAL_ALLOWED_CHARS (LAST_ALLOWED_CHAR - FIRST_ALLOWED_CHAR + 1)
-#define CHAR_MEDIAN_TOLERANCE (2)
+
+// rds buffering
 char rdsdata[9];
 char radiotext[65];
 int rdschanged = 0;
@@ -72,15 +77,6 @@ int fakerds = 1;
 void clearStringBuff(char * buf, int textsize) {
 	memset(buf, ' ', textsize);
 	buf[textsize] = 0;
-}
-
-void clearRDSBuff(void) {
-	uint16_t channel = (si4703_registers[READCHAN] & 0x03FF) + 875;
-	clearStringBuff(rdsdata, 8);
-	clearStringBuff(radiotext, 64);
-	str_putfreq(rdsdata, channel, 0);
-	rdschanged = 1;
-	fakerds = 1;
 }
 
 // draws a uint8 onto a string and returns position of last char
@@ -102,16 +98,31 @@ int str_putuint8(char * str, uint8_t val, int start) {
 	return start;
 }
 
-int str_putfreq(char * str, uint16_t freq, int start) {
+int str_putrawfreq(char * str, uint16_t freq, int start) {
 	uint8_t fract = freq % 10;
 	uint8_t whole = freq / 10;
 	
 	start = str_putuint8(str, whole, start);
 	str[start++] = '.';
 	start = str_putuint8(str, fract, start);
+	return start;
+}
+
+int str_putfreq(char * str, uint16_t freq, int start) {
+	start = str_putrawfreq(str, freq, start);
 	str[start++] = 'M';
 	str[start++] = 'H';
 	str[start++] = 'z';
+	return start;
+}
+
+void clearRDSBuff(void) {
+	uint16_t channel = (si4703_registers[READCHAN] & 0x03FF) + 875;
+	clearStringBuff(rdsdata, 8);
+	clearStringBuff(radiotext, 64);
+	str_putfreq(rdsdata, channel, 0);
+	rdschanged = 1;
+	fakerds = 1;
 }
 
 //Read the entire register control set from 0x00 to 0x0F
@@ -334,9 +345,6 @@ static inline void considerrdschar(char * buf, int place, char ch) {
 
 	buf[place] = ch;
 }
-
-#define RDS_PS (0)
-#define RDS_RT (2)
 
 
 int fm_readRDS(char* ps, char* rt)

@@ -18,5 +18,6 @@
 	// returns the i2c address or 0xFF for an error
 	// radio won't work after this command
 	uint8_t fm_get_isc_address(void);
+	int str_putrawfreq(char * str, uint16_t freq, int start);
 
 #endif
